@@ -4,6 +4,11 @@ resource "aws_instance" "vpro01" {
   security_groups = [aws_security_group.vpro_sg.name]
   key_name        = aws_key_pair.vpro-kp.key_name
 
+  volume_tags = {
+    Name    = var.instance_name
+    Project = var.project
+  }
+
   tags = {
     Name    = var.instance_name
     Project = var.project
