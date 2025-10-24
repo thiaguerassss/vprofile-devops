@@ -49,3 +49,8 @@ variable "security_group_description" {
   description = "Descrição do security group da instância"
   type        = string
 }
+
+variable "ansible_control_sg" {
+  description = "Nome do security group da instância ansible-control"
+  type        = string
+}
