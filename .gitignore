@@ -1,3 +1,4 @@
 terraform/.terraform
 terraform/terraform.tfvars
 terraform/ssh_keys
+ansible/inventory/vprokey

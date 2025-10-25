@@ -1,0 +1,9 @@
+---
+- name: Copiar arquivo compose.yml
+  copy:
+    src: ../files/compose.yml
+    dest: /tmp/compose.yml
+- name: Subir containers via Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: /tmp
+    state: present

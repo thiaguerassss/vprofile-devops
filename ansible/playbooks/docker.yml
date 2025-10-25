@@ -1,0 +1,7 @@
+---
+- name: Instalação do Docker e Docker Compose
+  hosts: vpro01
+  become: true
+  gather_facts: no
+  roles:
+    - docker
