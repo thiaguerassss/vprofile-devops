@@ -2,12 +2,12 @@ services:
   mysql:
     build:
       context: ./db
-    image: thiaguerassss/vprodb
+    image: thiaguerassss/vprodb:latest
   tomcat:
     build:
       context: ./app
-    image: thiaguerassss/vproapp
+    image: thiaguerassss/vproapp:latest
   nginx:
     build:
       context: ./web
-    image: thiaguerassss/vproweb
+    image: thiaguerassss/vproweb:latest
