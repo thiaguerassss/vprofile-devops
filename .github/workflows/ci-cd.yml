@@ -1,0 +1,84 @@
+name: VProfile CI/CD
+
+on:
+  push:
+    branches: "main"
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./terraform
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup do Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.13.3
+
+      - name: Configurar credenciais da AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      
+      - name: Inicializar arquivo terraform.tfvars
+        run: |
+          cat <<'EOF' > terraform.tfvars
+          ${{ secrets.TFVARS_CONTENT }}
+          EOF
+
+      - name: Terraform init
+        run: terraform init
+
+      - name: Terraform apply
+        run: terraform apply -auto-approve
+  
+  docker:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./docker
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup do Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login no Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build das imagens com Docker Compose
+        run: docker compose build
+
+      - name: Push das imagens para o Docker Hub
+        run: docker compose push
+  
+  deploy:
+    needs: [terraform, docker]
+    runs-on: [self-hosted, Linux, X64, ansible]
+    defaults:
+      run:
+        working-directory: ./ansible
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Chave privada para conexão a instância do VProfile
+        run: |
+          echo "${{ secrets.ANSIBLE_VPRO_KEY }}" > inventory/vprokey
+          chmod 600 inventory/vprokey
+      
+      - name: Deploy do projeto via playbook
+        run: ansible-playbook playbooks/site.yml
